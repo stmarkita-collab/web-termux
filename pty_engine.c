@@ -29,7 +29,7 @@ int main() {
     }
 
     fd_set fds;
-    char buf[4096];
+char buf[4096];
 
     while (1) {
         FD_ZERO(&fds);
