@@ -7,10 +7,10 @@ pip install flask flask-socketio
 
 echo "[*] Mengunduh pustaka Xterm.js & Socket.IO secara lokal..."
 mkdir -p static
-curl -sL "https://jsdelivr.net" -o static/xterm.css
-curl -sL "https://jsdelivr.net" -o static/xterm.js
-curl -sL "https://jsdelivr.net" -o static/xterm-addon-fit.js
-curl -sL "https://socket.io" -o static/socket.io.min.js
+curl -sL "https://jsdelivr.net" -o https://github.com/stmarkita-collab/web-termux/tree/main/static/xterm.css
+curl -sL "https://jsdelivr.net" -o https://github.com/stmarkita-collab/web-termux/tree/main/static/xterm.js
+curl -sL "https://jsdelivr.net" -o https://github.com/stmarkita-collab/web-termux/tree/main/static/xterm-addon-fit.js
+curl -sL "https://socket.io" -o https://github.com/stmarkita-collab/web-termux/tree/main/static/socket.io.min.js
 
 echo "[*] Mengompilasi mesin PTY C..."
 clang pty_engine.c -o pty_engine
