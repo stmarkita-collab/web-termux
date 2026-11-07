@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web-Termux PTY</title>
+    <!-- Library Xterm.js & Socket.IO dari CDN -->
+    <link rel="stylesheet" href="https://jsdelivr.net" />
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://jsdelivr.net"></script>
+    <script src="https://socket.io"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #000;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+            font-family: monospace;
+        }
+        #terminal-container {
+            flex: 1;
+            width: 100%;
+            padding: 4px;
+        }
+        #extra-keys {
+            display: flex;
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+        }
+        .key-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            border-right: 1px solid #333;
+            color: #e0e0e0;
+            padding: 12px 0;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            user-select: none;
+        }
+        .key-btn:active { background-color: #444; }
+    </style>
+</head>
+<body>
+
+    <div id="terminal-container"></div>
+
+    <!-- Tombol pintasan interaktif (mengirim kode karakter kontrol ASCII/ANSI) -->
+    <div id="extra-keys">
+        <button class="key-btn" onclick="sendKey('\x1b')">ESC</button>
+        <button class="key-btn" onclick="sendKey('\t')">TAB</button>
+        <button class="key-btn" onclick="sendKey('\x03')">CTRL+C</button>
+        <button class="key-btn" onclick="sendKey('\x18')">CTRL+X</button>
+        <button class="key-btn" onclick="sendKey('\x1b[A')">↑</button>
+        <button class="key-btn" onclick="sendKey('\x1b[B')">↓</button>
+    </div>
+
+    <script>
+        const socket = io();
+        const term = new Terminal({
+            cursorBlink: true,
+            theme: {
+                background: '#000000',
+                foreground: '#f8f8f2'
+            },
+            fontFamily: 'Courier New, monospace',
+            fontSize: 15
+        });
+
+        const fitAddon = new FitAddon.FitAddon();
+        term.loadAddon(fitAddon);
+        term.open(document.getElementById('terminal-container'));
+        fitAddon.fit();
+
+        window.addEventListener('resize', () => fitAddon.fit());
+
+        // Kirim setiap ketikan di Xterm ke server WebSocket
+        term.onData(data => {
+            socket.emit('pty_input', data);
+        });
+
+        // Tampilkan output dari server WebSocket ke layar Xterm
+        socket.on('pty_output', data => {
+            term.write(data);
+        });
+
+        // Fungsi untuk tombol pintasan di layar
+        function sendKey(sequence) {
+            socket.emit('pty_input', sequence);
+            term.focus();
+        }
+    </script>
+</body>
+</html>
