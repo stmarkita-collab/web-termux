@@ -3,8 +3,6 @@
 #include <unistd.h>
 #include <pty.h>
 #include <sys/select.h>
-#include <sys/ioctl.h>
-#include <termios.h>
 #include <signal.h>
 
 int main() {
@@ -17,14 +15,19 @@ int main() {
     }
 
     if (pid == 0) {
-        // Proses Anak: Menjalankan shell interaktif (bash)
+        // Mengatur environment variable agar warna dan aplikasi TUI berjalan normal
         setenv("TERM", "xterm-256color", 1);
+        
+        // Path shell khusus lingkungan Termux Android
+        const char *termux_bash = "/data/data/com.termux/files/usr/bin/bash";
+        execlp(termux_bash, "bash", "-i", NULL);
+        
+        // Fallback jika dijalankan di Linux desktop biasa
         execlp("/bin/bash", "bash", "-i", NULL);
-        perror("execlp gagal");
+        perror("Gagal menjalankan shell");
         exit(1);
     }
 
-    // Proses Induk: Meneruskan data antara stdin/stdout (Python) dan master_fd (PTY)
     fd_set fds;
     char buf[4096];
 
@@ -39,14 +42,12 @@ int main() {
             break;
         }
 
-        // Baca ketikan dari Python (stdin) -> kirim ke shell (master_fd)
         if (FD_ISSET(STDIN_FILENO, &fds)) {
             ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
             if (n <= 0) break;
             write(master_fd, buf, n);
         }
 
-        // Baca output layar dari shell (master_fd) -> kirim ke Python (stdout)
         if (FD_ISSET(master_fd, &fds)) {
             ssize_t n = read(master_fd, buf, sizeof(buf));
             if (n <= 0) break;
