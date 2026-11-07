@@ -2,9 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web-Termux PTY</title>
-    <!-- Library Xterm.js & Socket.IO dari CDN -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Termux Web UI</title>
     <link rel="stylesheet" href="https://jsdelivr.net" />
     <script src="https://jsdelivr.net"></script>
     <script src="https://jsdelivr.net"></script>
@@ -17,12 +16,12 @@
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
-            font-family: monospace;
         }
         #terminal-container {
             flex: 1;
             width: 100%;
             padding: 4px;
+            overflow: hidden;
         }
         #extra-keys {
             display: flex;
@@ -36,6 +35,7 @@
             border-right: 1px solid #333;
             color: #e0e0e0;
             padding: 12px 0;
+            font-family: monospace;
             font-size: 13px;
             font-weight: bold;
             cursor: pointer;
@@ -45,10 +45,7 @@
     </style>
 </head>
 <body>
-
     <div id="terminal-container"></div>
-
-    <!-- Tombol pintasan interaktif (mengirim kode karakter kontrol ASCII/ANSI) -->
     <div id="extra-keys">
         <button class="key-btn" onclick="sendKey('\x1b')">ESC</button>
         <button class="key-btn" onclick="sendKey('\t')">TAB</button>
@@ -62,12 +59,9 @@
         const socket = io();
         const term = new Terminal({
             cursorBlink: true,
-            theme: {
-                background: '#000000',
-                foreground: '#f8f8f2'
-            },
-            fontFamily: 'Courier New, monospace',
-            fontSize: 15
+            theme: { background: '#000000', foreground: '#f8f8f2' },
+            fontFamily: 'monospace',
+            fontSize: 14
         });
 
         const fitAddon = new FitAddon.FitAddon();
@@ -76,18 +70,9 @@
         fitAddon.fit();
 
         window.addEventListener('resize', () => fitAddon.fit());
+        term.onData(data => socket.emit('pty_input', data));
+        socket.on('pty_output', data => term.write(data));
 
-        // Kirim setiap ketikan di Xterm ke server WebSocket
-        term.onData(data => {
-            socket.emit('pty_input', data);
-        });
-
-        // Tampilkan output dari server WebSocket ke layar Xterm
-        socket.on('pty_output', data => {
-            term.write(data);
-        });
-
-        // Fungsi untuk tombol pintasan di layar
         function sendKey(sequence) {
             socket.emit('pty_input', sequence);
             term.focus();
