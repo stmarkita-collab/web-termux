@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Termux Web UI</title>
-    <!-- Tautan CDN Lengkap -->
-    <link rel="stylesheet" href="https://jsdelivr.net" />
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://jsdelivr.net"></script>
-    <script src="https://socket.io"></script>
+    <!-- Memuat pustaka dari folder lokal static -->
+    <link rel="stylesheet" href="/static/xterm.css" />
+    <script src="/static/xterm.js"></script>
+    <script src="/static/xterm-addon-fit.js"></script>
+    <script src="/static/socket.io.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         html, body {
@@ -59,9 +59,8 @@
     </div>
 
     <script>
-        // Cek apakah pustaka berhasil dimuat
         if (typeof Terminal === 'undefined' || typeof io === 'undefined') {
-            document.body.innerHTML = '<div style="color:red; padding:20px; font-family:monospace;">Gagal memuat Xterm.js atau Socket.IO. Pastikan ponsel terhubung ke internet untuk memuat CDN.</div>';
+            document.body.innerHTML = '<div style="color:red; padding:20px; font-family:monospace;">File lokal di folder static/ gagal dimuat. Pastikan skrip ./setup.sh sudah dijalankan.</div>';
         } else {
             const socket = io();
             const term = new Terminal({
